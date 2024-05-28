@@ -1,1 +1,1 @@
-# SpaceExplorer
+SpaceExplorer is a Go application designed to serve as a gateway for space enthusiasts. It integrates a robust HTTP server to facilitate user interactions, alongside a seamless database connection setup for data persistence. The application features meticulously defined routes to ensure a smooth and intuitive user experience, making it easier to explore and interact with the vast expanse of space information. Designed with efficiency and scalability in mind, SpaceExplorer invites users on a journey through the cosmos right from their fingertips.
