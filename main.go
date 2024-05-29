@@ -2,14 +2,15 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -44,6 +45,10 @@ func main() {
 	// Define routes
 	r.HandleFunc("/", HomeHandler)
 	r.HandleFunc("/api", APIHandler).Methods("GET")
+	// New endpoint to get planets
+	r.HandleFunc("/api/planets", func(w http.ResponseWriter, r *http.Request) {
+		GetPlanetsHandler(w, r, db)
+	}).Methods("GET")
 
 	// Start the server
 	httpAddr := os.Getenv("HTTP_ADDR")
@@ -63,4 +68,30 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 func APIHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, "API Endpoint")
+}
+
+// GetPlanetsHandler fetches all planets from the database
+func GetPlanetsHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	var planets []map[string]interface{}
+	rows, err := db.Query("SELECT id, name FROM planets")
+	if err != nil {
+		http.Error(w, "Error fetching planets", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var name string
+		err := rows.Scan(&id, &name)
+		if err != nil {
+			http.Error(w, "Error reading planets data", http.StatusInternalServerError)
+			return
+		}
+		planet := map[string]interface{}{"id": id, "name": name}
+		planets = append(planets, planet)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(planets)
 }
