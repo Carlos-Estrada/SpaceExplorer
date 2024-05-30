@@ -1,18 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { SafeAreaView, StatusBar } from 'react-native';
+import { SafeAreaView, StatusBar, View, Text } from 'react-native';
 import HomeScreen from './screens/HomeScreen';
 import DetailsScreen from './screens/DetailsScreen';
 import { API_KEY } from '@env';
 
 const Stack = createStackNavigator();
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, errorInfo: "" };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    this.setState({ errorInfo: errorInfo.componentStack });
+    console.log(error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Something went wrong.</Text>
+          <Text>{this.state.errorInfo}</Text>
+        </View>
+      );
+    }
+
+    return this.props.children; 
+  }
+}
+
 const App = () => {
-  console.log(API_KEY);
-  
+  if (!API_KEY) {
+    console.error('API_KEY is not defined. Please check your environment variables.');
+  }
+
   return (
-    <>
+    <ErrorBoundary>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={{ flex: 1 }}>
         <NavigationContainer>
@@ -22,7 +53,7 @@ const App = () => {
           </Stack.Navigator>
         </NavigationContainer>
       </SafeAreaView>
-    </>
+    </ErrorBoundary>
   );
 };
 
