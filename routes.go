@@ -9,33 +9,33 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
+	envLoadError := godotenv.Load()
+	if envLoadError != nil {
 		panic("Error loading .env file")
 	}
 
-	r := mux.NewRouter()
+	router := mux.NewRouter()
 
-	r.HandleFunc("/api/items", getItems).Methods("GET")
-	r.HandleFunc("/api/items/{id}", getItem).Methods("GET")
-	r.HandleFunc("/api/items", createItem).Methods("POST")
-	r.HandleFunc("/api/items/{id}", updateItem).Methods("PUT")
-	r.HandleFunc("/api/items/{id}", deleteItem).Methods("DELETE")
+	router.HandleFunc("/api/items", fetchAllItems).Methods("GET")
+	router.HandleFunc("/api/items/{id}", fetchSingleItem).Methods("GET")
+	router.HandleFunc("/api/items", createNewItem).Methods("POST")
+	router.HandleFunc("/api/items/{id}", updateExistingItem).Methods("PUT")
+	router.HandleFunc("/api/items/{id}", removeItem).Methods("DELETE")
 
-	http.ListenAndServe(":"+os.Getenv("PORT"), r)
+	http.ListenAndServe(":"+os.Getenv("PORT"), router)
 }
 
-func getItems(w http.ResponseWriter, r *http.Request) {
+func fetchAllItems(responseWriter http.ResponseWriter, request *http.Request) {
 }
 
-func getItem(w http.ResponseWriter, r *http.Request) {
+func fetchSingleItem(responseWriter http.ResponseWriter, request *http.Request) {
 }
 
-func createItem(w http.ResponseWriter, r *http.Request) {
+func createNewItem(responseWriter http.ResponseWriter, request *http.Request) {
 }
 
-func updateItem(w http.ResponseWriter, r *http.Request) {
+func updateExistingItem(responseWriter http.ResponseWriter, request *http.Request) {
 }
 
-func deleteItem(w http.ResponseWriter, r *http.Request) {
+func removeItem(responseWriter http.ResponseWriter, request *http.Request) {
 }
