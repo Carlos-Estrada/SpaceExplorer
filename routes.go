@@ -9,10 +9,7 @@ import (
 )
 
 func main() {
-	envLoadError := godotenv.Load()
-	if envLoadError != nil {
-		panic("Error loading .env file")
-	}
+	_ = godotenv.Load()
 
 	router := mux.NewRouter()
 
@@ -22,10 +19,15 @@ func main() {
 	router.HandleFunc("/api/items/{id}", updateExistingItem).Methods("PUT")
 	router.HandleFunc("/api/items/{id}", removeItem).Methods("DELETE")
 
-	http.ListenAndServe(":"+os.Getenv("PORT"), router)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000" 
+	}
+
+	http.ListenAndServe(":"+port, router)
 }
 
-func fetchAllItems(responseWriter http.ResponseWriter, request *http.Request) {
+func fetchAllCollectionItems(responseWriter http.ResponseWriter, request *http.Request) {
 }
 
 func fetchSingleItem(responseWriter http.ResponseWriter, request *http.Request) {
