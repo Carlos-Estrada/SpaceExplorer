@@ -13,31 +13,31 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/items", fetchAllItems).Methods("GET")
-	router.HandleFunc("/api/items/{id}", fetchSingleItem).Methods("GET")
-	router.HandleFunc("/api/items", createNewItem).Methods("POST")
-	router.HandleFunc("/api/items/{id}", updateExistingItem).Methods("PUT")
-	router.HandleFunc("/api/items/{id}", removeItem).Methods("DELETE")
+	router.HandleFunc("/api/items", GetAllItemsHandler).Methods("GET")
+	router.HandleFunc("/api/items/{id}", GetSingleItemHandler).Methods("GET")
+	router.HandleFunc("/api/items", CreateItemHandler).Methods("POST")
+	router.HandleFunc("/api/items/{id}", UpdateItemHandler).Methods("PUT")
+	router.HandleFunc("/api/items/{id}", DeleteItemHandler).Methods("DELETE")
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8000" 
+		port = "8000"
 	}
 
 	http.ListenAndServe(":"+port, router)
 }
 
-func fetchAllCollectionItems(responseWriter http.ResponseWriter, request *http.Request) {
+func GetAllItemsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
-func fetchSingleItem(responseWriter http.ResponseWriter, request *http.Request) {
+func GetSingleItemHandler(w http.ResponseWriter, r *http.Request) {
 }
 
-func createNewItem(responseWriter http.ResponseWriter, request *http.Request) {
+func CreateItemHandler(w http.ResponseWriter, r *http.Request) {
 }
 
-func updateExistingItem(responseWriter http.ResponseWriter, request *http.Request) {
+func UpdateItemHandler(w http.ResponseWriter, r *http.Request) {
 }
 
-func removeItem(responseWriter http.ResponseWriter, request *http.Request) {
+func DeleteItemHandler(w http.ResponseWriter, r *http.Request) {
 }
