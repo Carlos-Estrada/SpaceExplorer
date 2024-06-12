@@ -14,6 +14,10 @@ import (
 var db *sql.DB
 
 func init() {
+    setupDB()
+}
+
+func setupDB() {
     var err error
     psqlInfo := fmt.Sprintf("host=%s port=%s user=%s "+
         "password=%s dbname=%s sslmode=disable",
@@ -37,7 +41,7 @@ type Score struct {
 }
 
 func getScores(w http.ResponseWriter, r *http.Request) {
-    const query = `SELECT player, score FROM scores ORDER BY score DESC`
+    const query = "SELECT player, score FROM scores ORDER BY score DESC"
 
     rows, err := db.Query(query)
     if err != nil {
@@ -61,7 +65,9 @@ func getScores(w http.ResponseWriter, r *http.Request) {
     }
 
     w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(scores)
+    if err := json.NewEncoder(w).Encode(scores); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
 }
 
 func submitScore(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +77,7 @@ func submitScore(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    const query = `INSERT INTO scores(player, score) VALUES($1, $2)`
+    const query = "INSERT INTO scores(player, score) VALUES($1, $2)"
     _, err := db.Exec(query, s.Player, s.Score)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -82,8 +88,18 @@ func submitScore(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    http.HandleFunc("/scores", getScores)
+    http.HandleFunc("/scores", getIgnoreAccessControlHeader(getScores))
     http.HandleFunc("/submit", submitScore)
 
-    http.ListenAndServe(":8080", nil)
+    log.Println("Server starting on :8080")
+    if err := http.ListenAndServe(":8080", nil); err != nil {
+        log.Fatalf("Error starting server: %v", err)
+    }
+}
+
+func getIgnoreAccessControlHeader(handleFunc http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        handleFunc(w, r)
+    }
 }
