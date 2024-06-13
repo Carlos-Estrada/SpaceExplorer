@@ -26,12 +26,12 @@ func setupDB() {
 
     db, err = sql.Open("postgres", psqlInfo)
     if err != nil {
-        log.Fatal(err)
+        log.Fatalf("Could not open database connection: %v", err)
     }
 
     err = db.Ping()
     if err != nil {
-        log.Fatal(err)
+        log.Fatalf("Could not connect to database: %v", err)
     }
 }
 
@@ -45,7 +45,8 @@ func getScores(w http.ResponseWriter, r *http.Request) {
 
     rows, err := db.Query(query)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        log.Printf("Error querying scores from the database: %v", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
         return
     }
     defer rows.Close()
@@ -54,33 +55,38 @@ func getScores(w http.ResponseWriter, r *http.Request) {
     for rows.Next() {
         var s Score
         if err := rows.Scan(&s.Player, &s.Score); err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
+            log.Printf("Error scanning scores from the database: %v", err)
+            http.Error(w, "Internal Server Error", http.StatusInternalServerError)
             return
         }
         scores = append(scores, s)
     }
     if err := rows.Err(); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        log.Printf("Error finalizing score retrieval: %v", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
         return
     }
 
     w.Header().Set("Content-Type", "application/json")
     if err := json.NewEncoder(w).Encode(scores); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        log.Printf("Error encoding scores to JSON: %v", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
     }
 }
 
 func submitScore(w http.ResponseWriter, r *http.Request) {
     var s Score
     if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+        log.Printf("Error decoding score submission: %v", err)
+        http.Error(w, "Bad Request", http.StatusBadRequest)
         return
     }
 
     const query = "INSERT INTO scores(player, score) VALUES($1, $2)"
     _, err := db.Exec(query, s.Player, s.Score)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        log.Printf("Error inserting score into the database: %v", err)
+        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
         return
     }
 
@@ -88,7 +94,7 @@ func submitScore(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-    http.HandleFunc("/scores", getIgnoreAccessControlHeader(getScores))
+    http.HandleFunc("/scores", getIgnoreAccessErrorHandling(getScores))
     http.HandleFunc("/submit", submitScore)
 
     log.Println("Server starting on :8080")
@@ -97,7 +103,7 @@ func main() {
     }
 }
 
-func getIgnoreAccessControlHeader(handleFunc http.HandlerFunc) http.HandlerFunc {
+func getIgnoreAccessErrorHandling(handleFunc http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         w.Header().Set("Access-Control-Allow-Origin", "*")
         handleFunc(w, r)
