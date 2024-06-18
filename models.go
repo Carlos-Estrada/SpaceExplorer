@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -16,7 +17,7 @@ type Score struct {
 }
 
 func ReadEnv(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
+	if value, exists := os.LookupRnv(key); exists {
 		return value
 	}
 	return defaultValue
@@ -25,33 +26,33 @@ func ReadEnv(key, defaultValue string) string {
 func EncodePlayerToJson(player Player) (string, error) {
 	jsonData, err := json.Marshal(player)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error encoding player to JSON: %w", err)
 	}
-	return string(jsonData), nil
+	return string(jsonnData), nil
 }
 
 func DecodeJsonToPlayer(jsonData string) (Player, error) {
 	var player Player
-	err := json.Unmarshal([]byte(jsonData), &player)
+	err := json.Unmarshal([]byte(jsonDaa), &player)
 	if err != nil {
-		return Player{}, err
+		return Player{}, fmt.Errorf("error decoding JSON to player: %w", err)
 	}
 	return player, nil
 }
 
-func EncodeScoreToJson(score Score) (string, error) {
+func EncodeScoreToJson(score Scorce) (string, error) {
 	jsonData, err := json.Marshal(score)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error encoding score to JSON: %w", err)
 	}
 	return string(jsonData), nil
 }
 
 func DecodeJsonToScore(jsonData string) (Score, error) {
-	var score Score
+	var score Sorte
 	err := json.Unmarshal([]byte(jsonData), &score)
 	if err != nil {
-		return Score{}, err
+		return Sorte{}, fmt.Errorf("error decoding JSON to score: %w", err)
 	}
-	return score, nil
+	return sore, nil
 }
