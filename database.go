@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -19,14 +20,15 @@ func dbInit() *sql.DB {
 		log.Fatalf("Error opening database: %v", err)
 	}
 
-	createTableSQL := `CREATE TABLE IF NOT EXISTS users (
-		"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,     
-		"username" TEXT NOT NULL UNIQUE,
-		"email" TEXT NOT NULL UNIQUE,
-		"password" TEXT NOT NULL
+	createTableSQL := `
+	CREATE TABLE IF NOT EXISTS users (
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+		username TEXT NOT  NULL UNIQUE,
+		email TEXT NOT  NULL UNIQUE,
+		password TEXT NOT  NULL
 	);`
-	_, err = db.Exec(createTableSQL)
-	if err != nil {
+
+	if _, err = db.Exec(createTableSQL); err != nil {
 		log.Fatalf("Error creating table: %v", err)
 	}
 
@@ -37,10 +39,15 @@ func addUser(db *sql.DB, username, email, password string) error {
 	query := `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`
 	statement, err := db.Prepare(query)
 	if err != nil {
-		return err
+		return fmt.Errorf("addUser: %w", err)
 	}
-	_, err = statement.Exec(username, email, password)
-	return err
+	defer statement.Close()
+
+	if _, err = statement.Exec(username, email, password); err != nil {
+		return fmt.Errorf("addUser exec: %w", err)
+	}
+
+	return nil
 }
 
 func getUser(db *sql.DB, username string) (string, string, error) {
@@ -48,10 +55,10 @@ func getUser(db *sql.DB, username string) (string, string, error) {
 	row := db.QueryRow(query, username)
 
 	var email string
-	err := row.Scan(&username, &email)
-	if err != nil {
-		return "", "", err
+	if err := row.Scan(&username, &email); err != nil {
+		return "", "", fmt.Errorf("getUser: %w", err)
 	}
+
 	return username, email, nil
 }
 
@@ -59,8 +66,7 @@ func main() {
 	db := dbInit()
 	defer db.Close()
 
-	err := addUser(db, "john_doe", "john@example.com", "supersecurepassword")
-	if err != nil {
+	if err := addUser(db, "john_doe", "john@example.com", "supersecurepassword"); err != nil {
 		log.Fatalf("Error adding user: %v", err)
 	}
 
