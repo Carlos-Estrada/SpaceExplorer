@@ -23,9 +23,9 @@ func dbInit() *sql.DB {
 	createTableSQL := `
 	CREATE TABLE IF NOT EXISTS users (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		username TEXT NOT  NULL UNIQUE,
-		email TEXT NOT  NULL UNIQUE,
-		password TEXT NOT  NULL
+		username TEXT NOT NULL UNIQUE,
+		email TEXT NOT NULL UNIQUE,
+		password TEXT NOT NULL
 	);`
 
 	if _, err = db.Exec(createTableSQL); err != nil {
@@ -62,6 +62,21 @@ func getUser(db *sql.DB, username string) (string, string, error) {
 	return username, email, nil
 }
 
+func updateUserEmail(db *sql.DB, username, newEmail string) error {
+	query := `UPDATE users SET email = ? WHERE username = ?`
+	statement, err := db.Prepare(query)
+	if err != nil {
+		return fmt.Errorf("updateUserEmail: %w", err)
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(newEmail, username); err != nil {
+		return fmt.Errorf("updateUserEmail exec: %w", err)
+	}
+
+	return nil
+}
+
 func main() {
 	db := dbInit()
 	defer db.Close()
@@ -70,9 +85,13 @@ func main() {
 		log.Fatalf("Error adding user: %v", err)
 	}
 
+	if err := updateUserEmail(db, "john_doe", "newjohn@example.com"); err != nil {
+		log.Fatalf("Error updating user's email: %v", err)
+	}
+
 	username, email, err := getUser(db, "john_doe")
 	if err != nil {
 		log.Fatalf("Error getting user: %v", err)
 	}
-	log.Printf("User retrieved: %s, %s", username, email)
+	log.Printf("User retrieved after email update: %s, %s", username, email)
 }
