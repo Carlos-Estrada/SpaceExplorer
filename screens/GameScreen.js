@@ -18,11 +18,11 @@ const GameScreen = () => {
   const [score, setScore] = useState(0);
 
   const moveSpaceship = (direction) => {
-    setSpaceshipPosition(currentPosition => {
+    setSpaceshipPosition((currentPosition) => {
       let newPosition = currentPosition + (direction === 'left' ? -10 : 10);
       return Math.min(Math.max(newPosition, 0), windowWidth - spaceshipSize);
     });
-  }
+  };
 
   useEffect(() => {
     let newStars = [];
@@ -46,62 +46,79 @@ const GameScreen = () => {
     setObstacles(newObstacles);
 
     const gameInterval = setInterval(() => {
-      setStars(currentStars => currentStars.map(star => ({
-        ...star,
-        y: star.y + 10,
-      })));
+      // Update star positions
+      setStars((currentStars) =>
+        currentStars.map((star) => ({
+          ...star,
+          y: star.y + 10,
+        }))
+      );
 
-      setObstacles(currentObstacles => currentObstacles.map(obstacle => ({
-        ...obstacle,
-        y: obstacle.y + 5,
-      })));
+      // Update obstacle positions
+      setObstacles((currentObstacles) =>
+        currentObstacles.map((obstacle) => ({
+          ...obstacle,
+          y: obstacle.y + 5,
+        }))
+      );
 
-      obstacles.forEach(obstacle => {
-        if (obstacle.x < spaceshipPosition + spaceshipSize &&
-            obstacle.x + obstacleWidth > spaceshipPosition &&
-            obstacle.y < windowHeight &&
-            obstacle.y + obstacleHeight > windowHeight - spaceshipSize) {
-              console.log('collision detected');
+      // Check for collisions
+      obstacles.forEach((obstacle) => {
+        if (
+          obstacle.x < spaceshipPosition + spaceshipSize &&
+          obstacle.x + obstacleWidth > spaceshipPosition &&
+          obstacle.y < windowHeight &&
+          obstacle.y + obstacleHeight > windowHeight - spaceshipSize
+        ) {
+          console.log('collision detected');
         }
       });
 
-      setStars(currentStars => currentStars.filter(star => star.y < windowHeight).concat({
-        id: new Date().getTime(),
-        x: getRandomPosition(windowWidth - starSize),
-        y: -starSize,
-      }));
+      // Recycle stars
+      setStars((currentStars) =>
+        currentStars.filter((star) => star.y < windowHeight).concat({
+          id: new Date().getTime(),
+          x: getRandomPosition(windowWidth - starSize),
+          y: -starSize,
+        })
+      );
 
-      setObstacles(currentObstacles => currentObstacles.filter(obstacle => obstacle.y < windowHeight).concat({
-        id: new Date().getTime(),
-        x: getRandomPosition(windowWidth - obstacleWidth),
-        y: -obstacleHeight,
-      }));
-
+      // Recycle obstacles
+      setObstacles((currentObstacles) =>
+        currentObstacles.filter((obstacle) => obstacle.y < windowHeight).concat({
+          id: new Date().getTime(),
+          x: getRandomPosition(windowWidth - obstacleWidth),
+          y: -obstacleHeight,
+        })
+      );
     }, 100);
 
+    // Cleanup on component unmount
     return () => clearInterval(gameInterval);
-  }, [obstacles]);
+  }, [obstacles]); // Depend on 'obstacles' to trigger updates
 
   return (
     <View style={styles.gameScreen}>
-      <TouchableWithoutFeedback onPressIn={() => moveSpaceship('left')} onPressOut={()=> moveSpaceship('right')}>
-        <View style={[styles.spaceship, {left: spaceshipPosition}]} />
+      <TouchableWithoutFeedback onPressIn={() => moveSpaceship('left')} onPressOut={() => moveSpaceship('right')}>
+        <View style={[styles.spaceship, { left: spaceshipPosition }]} />
       </TouchableWithoutFeedback>
-      {stars.map(star => (
-        <View key={star.id} style={[styles.star, {top: star.y, left: star.x}]} />
+      {/* Render stars */}
+      {stars.map((star) => (
+        <View key={star.id} style={[styles.star, { top: star.y, left: star.x }]} />
       ))}
-      {obstacles.map(obstacle => (
-        <View key={obstacle.id} style={[styles.obstacle, {top: obstacle.y, left: obstacle.x}]} />
+      {/* Render obstacles */}
+      {obstacles.map((obstacle) => (
+        <View key={obstacle.id} style={[styles.obstacle, { top: obstacle.y, left: obstacle.x }]} />
       ))}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   gameScreen: {
     flex: 1,
     backgroundColor: '#000',
-    position: 'relative'
+    position: 'relative',
   },
   spaceship: {
     position: 'absolute',
