@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { View, Animated, Easing } from 'react-native';
+import { Animated, Easing } from 'react-native';
 
 const Star = () => {
   const [position] = useState(new Animated.ValueXY({ x: 0, y: 0 }));
 
-  const moveStar = () => {
-    Animated.timing(position, {
-      toValue: { x: 100, y: 300 },
-      duration: 2000,
-      useNativeDriver: true,
-      easing: Easing.linear,
-    }).start(() => {
-      position.setValue({ x: 0, y: 0 });
+  const resetPosition = () => {
+    position.setValue({ x: 0, y: 0 });
+  };
+
+  const getAnimationConfig = (toValue) => ({
+    toValue,
+    duration: 2000,
+    useNativeDriver: true,
+    easing: Easing.linear,
+  });
+
+  const animateStarMovement = () => {
+    const animationConfig = getAnimationConfig({ x: 100, y: 300 });
+    Animated.timing(position, animationConfig).start(() => {
+      resetPosition();
     });
   };
 
   useEffect(() => {
-    moveStar();
+    animateStarMovement();
   }, []);
 
   return (
