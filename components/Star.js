@@ -8,15 +8,14 @@ const Star = () => {
     position.setValue({ x: 0, y: 0 });
   };
 
-  const getAnimationConfig = (toValue) => ({
-    toValue,
+  const animationConfig = {
+    toValue: { x: 100, y: 300 },
     duration: 2000,
     useNativeDriver: true,
     easing: Easing.linear,
-  });
+  };
 
   const animateStarMovement = () => {
-    const animationConfig = getAnimationConfig({ x: 100, y: 300 });
     Animated.timing(position, animationConfig).start(() => {
       resetPosition();
     });
