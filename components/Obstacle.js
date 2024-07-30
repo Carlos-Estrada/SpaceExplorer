@@ -1,38 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Text } from 'react-native';
 
-const WINDOW_WIDTH = Dimensions.get('window').width;
+const SCREEN_WIDTH = Dimensions.get('window').width;
 const OBSTACLE_WIDTH = 50;
 const OBSTACLE_HEIGHT = 50;
 
-const Obstacle = ({ color = '#444', speed = 10, startX }) => {
-  const [position, setPosition] = useState(startX);
-  const [error, setError] = useState('');
+const MovingObstacle = ({ color = '#444', movementSpeed = 10, initialPositionX }) => {
+  const [horizontalPosition, setHorizontalPosition] = useState(initialPositionX);
+  const [obstacleError, setObstacleError] = useState('');
 
   useEffect(() => {
     try {
-      const moveObstacle = () => {
-        setPosition((currentPosition) => {
+      const updateObstaclePosition = () => {
+        setHorizontalPosition((currentPosition) => {
           if (currentPosition <= -OBSTACLE_WIDTH) {
-            return WINDOW_WIDTH;
+            return SCREEN_WIDTH;
           } else {
-            return currentPosition - speed;
+            return currentPosition - movementSpeed;
           }
         });
       };
 
-      const intervalId = setInterval(moveObstacle, 100);
+      const movementIntervalId = setInterval(updateObstaclePosition, 100);
 
-      return () => clearInterval(intervalId);
-    } catch (err) {
-      setError('Failed to move obstacle: ' + err.message);
+      return () => clearInterval(movementIntervalId);
+    } catch (error) {
+      setObstacleError('Failed to move obstacle: ' + error.message);
     }
-  }, [speed]);
+  }, [movementSpeed]);
 
-  if (error) {
+  if (obstacleError) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Error: {error}</Text>
+        <Text style={styles.errorText}>Error: {obstacleError}</Text>
       </View>
     );
   }
@@ -40,7 +40,7 @@ const Obstacle = ({ color = '#444', speed = 10, startX }) => {
   return (
     <View
       style={[styles.obstacle, {
-        left: position,
+        left: horizontalPosition,
         backgroundColor: color
       }]}
     />
@@ -65,4 +65,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Obstacle;
+export default MovingObstacle;
